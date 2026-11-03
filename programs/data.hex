@@ -1,0 +1,5 @@
+// Starting data memory
+0005  // DMEM[0]
+0007  // DMEM[1]
+0000  // DMEM[2]  (ADD result goes here)
+0000  // DMEM[3]  (SUB result goes here)
