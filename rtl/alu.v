@@ -15,6 +15,7 @@ module alu (
     always @(*) begin
         case (op)
             ALU_ADD: y = a + b;   // keeps the low 16 bits: wraps around, no flags
+            ALU_SUB: y = a - b;
             default: y = 16'd0;
         endcase
     end
