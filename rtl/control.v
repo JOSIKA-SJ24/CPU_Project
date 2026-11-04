@@ -34,11 +34,10 @@ module control (
         case (opcode)
             //            row of the table
             OP_ADD: begin RegWrite = 1; WBsel = WB_ALU; ALUOp = 2'd0; BSel = B_REG; end
-            // TODO (SUB owner): OP_SUB row goes here
             OP_SUB: begin RegWrite = 1; WBsel = WB_ALU; ALUOp = 2'd1; BSel = B_REG; end
             // LD: ALU adds base + offset to make the address, memory data goes to rd
             OP_LD:  begin RegWrite = 1; WBsel = WB_MEM; ALUOp = 2'd0; BSel = B_IMM; end
-            // TODO (SW owner): OP_ST row goes here
+            OP_ST:  begin RegWrite = 0; MemWrite = 1; ALUOp = 2'd0; BSel = B_IMM; end
             default: ; // NOP or unknown: change nothing
         endcase
     end
