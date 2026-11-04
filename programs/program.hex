@@ -1,5 +1,9 @@
-// Test program for LD and ADD.
+// Test program for SUB, ST, LD and ADD.
 // Layout: opcode | rd | rs1 | rs2 | imm12
 10100000  // PC 0: LD  R1, 0(R0)    R1 = DMEM[0] = 5
 10200001  // PC 1: LD  R2, 1(R0)    R2 = DMEM[1] = 7
 01312000  // PC 2: ADD R3, R1, R2   R3 = 12
+
+02412000  // PC 3: SUB R4, R1, R2   R4 = 5 - 7 = 0xFFFE
+11003002  // PC 4: ST  R3, 2(R0)    DMEM[2] = R3 = 12
+11004003  // PC 5: ST  R4, 3(R0)    DMEM[3] = R4 = 0xFFFE
