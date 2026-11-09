@@ -7,7 +7,7 @@ module imem_m10k #(
     input 	 clk
 );
     // force M10K ram style
-    reg [31:0] mem [63:0] /* synthesis ramstyle = "no_rw_check, M10K" */;
+    reg [31:0] mem [0:63] /* synthesis ramstyle = "no_rw_check, M10K" */;
     initial $readmemh(INIT_FILE, mem);
 
     always @ (posedge clk) begin
