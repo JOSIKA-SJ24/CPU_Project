@@ -13,17 +13,16 @@ module cpu (
     input wire clk,
     input wire reset
 );
-    // ---------- Memories (separate program and data memory) ----------
-    reg [31:0] imem [0:63];   // program memory: 64 instructions
-    reg [15:0] dmem [0:63];   // data memory:    64 words of 16 bits
 
     // ---------- State elements (things that REMEMBER) ----------
     reg [15:0] pc;            // program counter: which instruction is next
     reg [31:0] ir;            // instruction register: the fetched instruction
     reg [1:0]  state;         // which step we are in
 
-    localparam FETCH = 2'd0, EXECUTE = 2'd1, COMMIT = 2'd2;
-
+    localparam FETCH = 2'd0, IR_LOAD = 2'd1, EXECUTE = 2'd2, COMMIT = 2'd3;
+    // ---------- Program memory (M10K) ----------
+    wire [31:0] imem_q;
+    imem_m10k u_imem (.q(imem_q), .read_address(pc[5:0]), .clk(clk));
     // ---------- Decoder: just slicing bits, no logic ----------
     wire [7:0]  opcode = ir[31:24];
     wire [3:0]  rd     = ir[23:20];
@@ -54,7 +53,10 @@ module cpu (
 
     // ---------- Data memory read (address comes from the ALU) ----------
     wire [15:0] addr16     = ExecResult16;
-    wire [15:0] LoadData16 = dmem[addr16[5:0]];
+    wire [15:0] LoadData16;
+    dmem_m10k u_dmem (.q(LoadData16), .d(B16),
+                      .write_address(addr16[5:0]), .read_address(addr16[5:0]),
+                      .we(MemWrite & commit), .clk(clk));
 
     // ---------- Writeback mux: what gets saved into rd ----------
     assign WB_DATA16 = WBsel ? LoadData16 : ExecResult16;
@@ -68,7 +70,10 @@ module cpu (
         end else begin
             case (state)
                 FETCH: begin
-                    ir    <= imem[pc[5:0]];   // IRWrite: latch the instruction
+                    state <= IR_LOAD;
+                end
+                IR_LOAD: begin
+                    ir    <= imem_q;          // IRWrite: latch the instruction
                     state <= EXECUTE;
                 end
                 EXECUTE: begin
@@ -78,7 +83,6 @@ module cpu (
                 end
                 COMMIT: begin
                     // The register write happens inside regfile (we = RegWrite & commit).
-                    if (MemWrite) dmem[addr16[5:0]] <= B16;  // ST: store R[rs2]
                     pc    <= pc + 16'd1;                     // PCWrite, PCSel = SEQ
                     state <= FETCH;
                 end
