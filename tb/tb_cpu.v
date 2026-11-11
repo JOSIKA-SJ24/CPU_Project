@@ -17,13 +17,13 @@ module tb_cpu;
         $dumpvars(0, tb_cpu);
 
         for (i = 0; i < 64; i = i + 1) begin dut.imem[i] = 32'd0; dut.dmem[i] = 16'd0; end
-        $readmemh("program.hex", dut.imem, 0, 5);
-        $readmemh("data.hex",    dut.dmem, 0, 3);
+        $readmemh("programs/program.hex", dut.imem, 0, 5);
+        $readmemh("programs/data.hex",    dut.dmem, 0, 3);
 
         repeat (2) @(posedge clk);
         reset = 0;
 
-        // 3 instructions x 3 steps each = 9 clock cycles
+        // 6 instructions x 3 steps each = 18 clock cycles
         repeat (18) @(posedge clk);
         #1;
 
@@ -37,7 +37,7 @@ module tb_cpu;
         if (dut.rf.r[4] !== 16'hFFFE) begin $display("FAIL: R4 should be 0xFFFE (5 - 7)");      errors = errors + 1; end
         if (dut.dmem[2] !== 16'd12)   begin $display("FAIL: DMEM[2] should be 12 (ST R3)");     errors = errors + 1; end
         if (dut.dmem[3] !== 16'hFFFE) begin $display("FAIL: DMEM[3] should be 0xFFFE (ST R4)"); errors = errors + 1; end
-        if (errors == 0) $display("\nPASS: LD and ADD work.");
+        if (errors == 0) $display("\nPASS: LD, ADD, SUB and ST work.");
         $stop;   // pauses ModelSim instead of asking to quit
     end
 

@@ -1,0 +1,12 @@
+# Generated ModelSim libraries, local project settings and simulation output
+/work/
+/alu_work/
+/b_work/
+/*.mpf
+/*.mti
+/modelsim.ini
+/transcript
+/*.wlf
+/*.vcd
+/*.log
+/vsim_stacktrace.vstf

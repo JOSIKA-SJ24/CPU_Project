@@ -1,0 +1,50 @@
+// Part B test program: provisional opcodes 03 through 0A, low 4 bits for shift amounts, zero-extended ADDI immediate.
+// Fields: [31:24] opcode, [23:20] rd, [19:16] rs1, [15:12] rs2, [11:0] imm12.
+10100000 // PC 00: LD R1, 0(R0): load the first logic test operand.
+10200001 // PC 01: LD R2, 1(R0): load the second logic test operand.
+03312000 // PC 02: AND R3, R1, R2
+04412000 // PC 03: OR R4, R1, R2
+05512000 // PC 04: XOR R5, R1, R2
+06612FFF // PC 05: NOT R6, R1: ignore nonzero rs2 and imm12.
+0A702001 // PC 06: ADDI R7, R0, 1: ignore nonzero rs2.
+10800002 // PC 07: LD R8, 2(R0): load a negative bit pattern for shift tests.
+07987000 // PC 08: SLL R9, R8, R7: shift left by 1.
+08A87000 // PC 09: SRL R10, R8, R7: logical right shift by 1.
+09B87000 // PC 10: SRA R11, R8, R7: arithmetic right shift by 1.
+0AC02FFF // PC 11: ADDI imm=FFF: must zero-extend to 0FFF.
+0AD02800 // PC 12: ADDI imm=800: must zero-extend to 0800.
+0AEC2001 // PC 13: ADDI uses the nonzero base value in R12.
+0AF02000 // PC 14: ADDI imm=0: must not use the value in R2.
+0938F000 // PC 15: SRA with shift amount 0 preserves the bit pattern.
+0A70000F // PC 16: ADDI constructs a shift amount of 15.
+07987000 // PC 17: SLL shifts left by 15.
+08A87000 // PC 18: SRL shifts right by 15.
+09B87000 // PC 19: SRA shifts a negative value right by 15.
+0A700010 // PC 20: ADDI constructs a shift amount of 16.
+07987000 // PC 21: SLL: the low 4 bits of 16 are zero.
+08A87000 // PC 22: SRL: the low 4 bits of 16 are zero.
+09B87000 // PC 23: SRA: the low 4 bits of 16 are zero.
+10700003 // PC 24: LD R7, 3(R0): all upper bits of the shift operand are 1.
+09B87000 // PC 25: SRA: use only the low 4 bits of FFFF, giving 15.
+08A87000 // PC 26: SRL: use only the low 4 bits of FFFF, giving 15.
+07987000 // PC 27: SLL: use only the low 4 bits of FFFF, giving 15.
+0AE70001 // PC 28: ADDI: FFFF + 1 wraps to 0000.
+01FCD000 // PC 29: Original ADD instruction regression: 0FFF + 0800.
+02F0F000 // PC 30: Original SUB instruction regression: 0 - 17FF.
+05012000 // PC 31: XOR attempts to write R0; the register file must ignore the write.
+06617000 // PC 32: NOT ignores the second operand value of FFFF.
+11006004 // PC 33: ST R6, 4(R0): save the NOT result.
+0A660001 // PC 34: ADDI immediately after ST: MemWrite must clear.
+11006005 // PC 35: ST R6, 5(R0): save the ADDI result.
+10300004 // PC 36: LD R3, 4(R0): read back the earlier store result.
+03412000 // PC 37: AND immediately after LD: WBsel must return to ALU writeback.
+FE412000 // PC 38: Undefined opcode: no registers or memory may change.
+00412FFF // PC 39: NOP must not write even when other fields are nonzero.
+0A000FFF // PC 40: ADDI attempts to write R0; R0 must remain zero.
+0A512000 // PC 41: ADDI with zero preserves the source register bit pattern.
+0A5007FF // PC 42: ADDI boundary case imm=7FF.
+0A500000 // PC 43: ADDI boundary case imm=000.
+06507000 // PC 44: NOT R5, R0: complementing all zeros produces all ones.
+09557000 // PC 45: SRA uses the same source and destination register.
+08557000 // PC 46: SRL uses the result written back by the previous instruction.
+03550000 // PC 47: AND with R0 produces zero.

@@ -33,7 +33,7 @@ module cpu (
 
     // ---------- Control unit (the table) ----------
     wire RegWrite, WBsel, BSel, MemWrite;
-    wire [1:0] ALUOp;
+    wire [3:0] ALUOp; // Part B: nine ALU operations require 4 bits, connecting control to alu.
     control ctl (.opcode(opcode), .RegWrite(RegWrite), .WBsel(WBsel),
                  .ALUOp(ALUOp), .BSel(BSel), .MemWrite(MemWrite));
 
