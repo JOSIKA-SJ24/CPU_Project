@@ -1,0 +1,4 @@
+A5A5 // DMEM[0]: logic operand A.
+0FF0 // DMEM[1]: logic operand B.
+8001 // DMEM[2]: shift test data with the highest bit set.
+FFFF // DMEM[3]: shift operand with low 4 bits equal to 15; also used for addition wraparound.
