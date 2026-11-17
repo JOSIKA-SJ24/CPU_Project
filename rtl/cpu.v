@@ -31,10 +31,13 @@ module cpu (
     wire [15:0] imm16  = {4'd0, ir[11:0]};   // zero-extend 12 -> 16 bits
 
     // ---------- Control unit (the table) ----------
-    wire RegWrite, WBsel, BSel, MemWrite;
+    wire RegWrite, BSel, MemWrite;
+    wire [1:0] WBsel;    // Part C: 2 bits, four writeback sources
+    wire ACCWrite, ACCClear; // Part C: accumulator controls
     wire [3:0] ALUOp; // Part B: nine ALU operations require 4 bits, connecting control to alu.
     control ctl (.opcode(opcode), .RegWrite(RegWrite), .WBsel(WBsel),
-                 .ALUOp(ALUOp), .BSel(BSel), .MemWrite(MemWrite));
+                 .ALUOp(ALUOp), .BSel(BSel), .MemWrite(MemWrite),
+                 .ACCWrite(ACCWrite), .ACCClear(ACCClear));
 
     // ---------- Register file ----------
     wire [15:0] A16, B16, WB_DATA16;
@@ -58,8 +61,28 @@ module cpu (
                       .write_address(addr16[5:0]), .read_address(addr16[5:0]),
                       .we(MemWrite & commit), .clk(clk));
 
+    // ---------- MAC unit + accumulator (Part C) ----------
+    // Like every other write, the ACC may only change in COMMIT.
+    wire [47:0] acc48;
+    mac u_mac (.clk(clk), .reset(reset), .a(A16), .b(B16),
+               .acc_write(ACCWrite & commit), .acc_clear(ACCClear & commit),
+               .acc(acc48));
+
+    // ACCOUT: ir[1:0] picks which 16-bit slice of the 48-bit ACC to read.
+    wire [1:0]  acc_sel   = ir[1:0];
+    wire [15:0] AccSlice16 = (acc_sel == 2'd2) ? acc48[47:32] :   // high
+                             (acc_sel == 2'd1) ? acc48[31:16] :   // middle
+                                                 acc48[15:0];     // low (sel 0, and 3 for now)
+
+    // LDI: the full 16-bit immediate in ir[15:0] (no extension needed).
+    wire [15:0] LdiImm16 = ir[15:0];
+
     // ---------- Writeback mux: what gets saved into rd ----------
-    assign WB_DATA16 = WBsel ? LoadData16 : ExecResult16;
+    // 00 = ALU result, 01 = data memory, 10 = LDI immediate, 11 = ACC slice
+    assign WB_DATA16 = (WBsel == 2'd1) ? LoadData16 :
+                       (WBsel == 2'd2) ? LdiImm16   :
+                       (WBsel == 2'd3) ? AccSlice16 :
+                                         ExecResult16;
 
     // ---------- The state machine: the order of operations ----------
     always @(posedge clk) begin
