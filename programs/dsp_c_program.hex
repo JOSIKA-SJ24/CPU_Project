@@ -1,0 +1,30 @@
+// Part C test program: LDI, CLRACC, MAC, ACCOUT (provisional opcodes 0B-0E).
+// LDI rd, imm16 : [31:24]=0B [23:20]=rd [15:0]=imm16
+// CLRACC        : [31:24]=0C
+// MAC rs1, rs2  : [31:24]=0D [19:16]=rs1 [15:12]=rs2
+// ACCOUT rd,sel : [31:24]=0E [23:20]=rd  [1:0]=sel (0 = ACC[15:0], 1 = ACC[31:16], 2 = ACC[47:32])
+0B100003  // PC 00: LDI R1, 3
+0B20FFFE  // PC 01: LDI R2, 0xFFFE (-2): full 16-bit immediate
+0C000000  // PC 02: CLRACC                      ACC = 0
+0B30000A  // PC 03: LDI R3, 10
+0B400001  // PC 04: LDI R4, 1
+0D034000  // PC 05: MAC R3, R4                  ACC = 10
+0D012000  // PC 06: MAC R1, R2                  ACC = 10 + 3*(-2) = 4   (ISA draft example)
+0E500000  // PC 07: ACCOUT R5, 0                R5 = 4
+0B608000  // PC 08: LDI R6, 0x8000 (-32768)
+0D066000  // PC 09: MAC R6, R6                  ACC = 4 + 2^30 = 0x0000_4000_0004
+0E700000  // PC 10: ACCOUT R7, 0                R7 = 0x0004
+0E800001  // PC 11: ACCOUT R8, 1                R8 = 0x4000
+0E900002  // PC 12: ACCOUT R9, 2                R9 = 0x0000
+0BA07FFF  // PC 13: LDI R10, 0x7FFF (32767)
+0D0A6000  // PC 14: MAC R10, R6                 ACC = 0x40000004 + 32767*(-32768) = 0x8004
+0EB00000  // PC 15: ACCOUT R11, 0               R11 = 0x8004
+0EC00002  // PC 16: ACCOUT R12, 2               R12 = 0x0000
+0C000000  // PC 17: CLRACC                      ACC = 0
+0D012000  // PC 18: MAC R1, R2                  ACC = -6 = 0xFFFF_FFFF_FFFA
+0ED00002  // PC 19: ACCOUT R13, 2               R13 = 0xFFFF (sign bits)
+0EE00000  // PC 20: ACCOUT R14, 0               R14 = 0xFFFA
+0B001234  // PC 21: LDI R0, 0x1234              R0 must stay 0
+0E000000  // PC 22: ACCOUT R0, 0                R0 must stay 0
+01F15000  // PC 23: ADD R15, R1, R5             R15 = 3 + 4 = 7 (ALU writeback still works)
+10400000  // PC 24: LD R4, 0(R0)                R4 = DMEM[0] = 5 (memory writeback still works)
